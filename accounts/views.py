@@ -1,4 +1,4 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.views import APIView
@@ -46,10 +46,20 @@ class ProfileView(APIView):
 class RegisterView(generics.CreateAPIView):
     """
     Registration endpoint.
+    Returns a friendly message on success.
     CSRF exemption will be applied in urls.py.
     """
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(
+            {"message": "Registration successful! Please login."},
+            status=status.HTTP_201_CREATED
+        )
 
 
 class CustomLoginView(TokenObtainPairView):
