@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - Platinum Non Resident Account</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #0a2a43, #0f4c75);
+    min-height: 100vh;
+}
+
+/* NAVBAR */
+.navbar {
+    background: #0f4c75;
+    color: white;
+    padding: 15px 20px;
+}
+
+.nav-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-flex a {
+    color: white;
+    text-decoration: none;
+    margin-left: 15px;
+    font-size: 14px;
+}
+
+.btn-bank {
+    background: #10b981;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+/* MAIN */
+.main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 70px);
+}
+
+/* CARD */
+.wrapper {
+    width: 95%;
+    max-width: 900px;
+    display: flex;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.left {
+    flex: 1;
+    background: #0f4c75;
+    color: white;
+    padding: 40px;
+}
+
+.right {
+    flex: 1;
+    padding: 40px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+/* Password toggle */
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper span {
+    position: absolute;
+    right: 10px;
+    top: 14px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #0f4c75;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: #0f4c75;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0a2a43;
+}
+
+.link {
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* LOADING SPINNER */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #ccc;
+    border-top: 4px solid #0f4c75;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: auto;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+    .wrapper { flex-direction: column; }
+    .left { display: none; }
+    .nav-flex { flex-direction: column; gap: 10px; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar">
+<div class="nav-flex">
+    <h2>💰 Platinum Non Resident Account</h2>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="register.html" class="btn-bank">Open Account</a>
+    </nav>
+</div>
+</header>
+
+<!-- MAIN -->
+<div class="main">
+<div class="wrapper">
+
+    <div class="left">
+        <h1>Platinum Non Resident Account</h1>
+        <p>Secure login to manage your finances.</p>
+    </div>
+
+    <div class="right">
+        <h2>Login</h2>
+
+        <input type="text" id="username" placeholder="Username or Email">
+
+        <div class="password-wrapper">
+            <input type="password" id="password" placeholder="Password">
+            <span onclick="togglePassword()">Show</span>
+        </div>
+
+        <button onclick="login()">Login</button>
+
+        <div class="link">
+            Don’t have an account? <a href="register.html">Register</a>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+z-index:9999;
+justify-content:center;
+align-items:center;
+">
+<div style="background:white;padding:20px;border-radius:10px;text-align:center;">
+<div class="spinner"></div>
+<p style="margin-top:10px;">🔐 Verifying your credentials...</p>
+</div>
+</div>
+
+<script>
+const LOGIN_URL = "http://127.0.0.1:8000/api/accounts/login/";
+
+/* Toggle password */
+function togglePassword() {
+    const pass = document.getElementById("password");
+    pass.type = pass.type === "password" ? "text" : "password";
+}
+
+/* Login */
+async function login() {
+
+    const overlay = document.getElementById("loadingOverlay");
+
+    const data = {
+        username: document.getElementById("username").value.trim(),
+        password: document.getElementById("password").value
+    };
+
+    if (!data.username || !data.password) {
+        alert("Please enter username and password");
+        return;
+    }
+
+    overlay.style.display = "flex";
+
+    try {
+        const res = await fetch(LOGIN_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        const response = await res.json();
+
+        if (res.ok) {
+            localStorage.setItem("token", response.access);
+
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 800);
+
+        } else {
+            overlay.style.display = "none";
+            alert(response.detail || "Invalid login credentials");
+        }
+
+    } catch (error) {
+        overlay.style.display = "none";
+        alert("Network error. Check server.");
+        console.error(error);
+    }
+}
+</script>
+
+</body>
+</html>

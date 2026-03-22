@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Platinum Non Resident Account</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- CSS -->
+<link rel="stylesheet" href="bank.css">
+
+<!-- CHART JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar">
+<div class="container nav-flex">
+<h2>💰 Platinum Non Resident Account</h2>
+
+<nav>
+<a href="about_us.html">About Us</a>
+<a href="login.html">Login</a>
+<a href="register.html" class="btn-bank">Open Account</a>
+</nav>
+</div>
+</header>
+
+
+<!-- HERO -->
+<section class="hero">
+<div class="container">
+
+<h1>Smart Banking for Smart People</h1>
+<p>Save, transfer, and grow your money with Platinum Non Resident Account</p>
+
+<a href="register.html" class="btn-bank">Get Started</a>
+
+</div>
+</section>
+
+
+<!-- ABOUT PREVIEW -->
+<section class="container" style="margin-top:40px;">
+
+<h2>About Platinum Non Resident Account</h2>
+
+<p style="margin-top:10px;">
+Platinum Non Resident Account has spent years helping individuals, business owners, and investors achieve financial success. 
+We provide a secure and growth-driven banking environment where innovation meets opportunity. 
+Our high-yield investment solutions and modern banking services are designed to help you grow, manage, 
+and protect your wealth with confidence.
+</p>
+
+<a href="about_us.html" class="btn-bank" style="display:inline-block; margin-top:15px;">
+Read More
+</a>
+
+</section>
+
+
+<!-- ANALYTICS -->
+<section class="container" style="margin-top:40px;">
+
+<h2>Financial Insights</h2>
+
+<div class="bank-grid">
+
+<div class="bank-card">
+<h3>Total Users</h3>
+<p>15,240+</p>
+</div>
+
+<div class="bank-card">
+<h3>Transactions Today</h3>
+<p>$4,200,000</p>
+</div>
+
+<div class="bank-card">
+<h3>Active Investors</h3>
+<p>3,500+</p>
+</div>
+
+</div>
+
+</section>
+
+
+<!-- CHARTS SECTION -->
+<section class="container" style="margin-top:50px;">
+
+<h2>Financial Analytics</h2>
+
+<div class="bank-grid">
+
+<div class="bank-card">
+<canvas id="lineChart"></canvas>
+</div>
+
+<div class="bank-card">
+<canvas id="barChart"></canvas>
+</div>
+
+</div>
+
+</section>
+
+
+<!-- INVESTMENT -->
+<section class="container" style="margin-top:40px;">
+
+<h2>Investment Tips</h2>
+
+<div class="bank-grid">
+
+<div class="bank-card">
+<h3>💡 Save Consistently</h3>
+<p>Saving monthly builds long-term wealth.</p>
+</div>
+
+<div class="bank-card">
+<h3>📈 Invest Early</h3>
+<p>The earlier you invest, the more you earn.</p>
+</div>
+
+<div class="bank-card">
+<h3>🔒 Secure Your Funds</h3>
+<p>Always use PIN and OTP protection.</p>
+</div>
+
+</div>
+
+</section>
+
+
+<!-- FOOTER -->
+<footer style="margin-top:50px; padding:20px; text-align:center;">
+<p>© 2016 Platinum Non Resident Account</p>
+</footer>
+
+
+<!-- CHART SCRIPT -->
+<script>
+
+/* LINE CHART */
+new Chart(document.getElementById('lineChart'), {
+    type: 'line',
+    data: {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+        datasets: [{
+            label: 'Savings Growth',
+            data: [200, 400, 300, 600, 500, 800],
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16,185,129,0.2)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true
+    }
+});
+
+
+/* BAR CHART */
+new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+        labels: ['USD','NGN','EUR'],
+        datasets: [{
+            label: 'Currency Balance',
+            data: [3000, 5000, 2000],
+            backgroundColor: ['#10b981','#0f172a','#059669']
+        }]
+    },
+    options: {
+        responsive: true
+    }
+});
+
+</script>
+
+</body>
+</html>
