@@ -1,12 +1,14 @@
+# transactions/views.py
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.hashers import check_password, make_password
 import time
+import dropbox
 
 from .models import Transfer
 from .serializers import TransferSerializer
-from .utils import generate_receipt
+from .utils import generate_receipt  # updated to handle Dropbox upload
 
 
 # ---------------------- SET / CREATE 6-DIGIT PIN ----------------------
@@ -77,17 +79,19 @@ class CreateTransferView(APIView):
             transfer.status = "Completed"
             transfer.save()
 
-            # Optionally generate PDF receipt
+            # Generate PDF receipt and upload to Dropbox
+            receipt_url = None
             try:
-                generate_receipt(user, transfer)
+                receipt_url = generate_receipt(user, transfer)  # returns Dropbox direct link
             except Exception as e:
-                print("Receipt generation error:", str(e))
+                print("Receipt generation/upload error:", str(e))
 
             return Response({
                 "success": True,
                 "message": "Transaction Successful",
                 "transfer_id": transfer.id,
-                "new_balance": user.balance
+                "new_balance": user.balance,
+                "receipt_url": receipt_url
             })
 
         return Response(serializer.errors, status=400)

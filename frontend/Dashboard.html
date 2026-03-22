@@ -10,99 +10,20 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial;}
 body{background:#f4f6f9;}
-
-.header{
-    background:#0f4c75;
-    color:white;
-    padding:15px;
-    display:flex;
-    justify-content:space-between;
-}
-
+.header{background:#0f4c75;color:white;padding:15px;display:flex;justify-content:space-between;}
 .container{padding:20px;}
-
-.card{
-    background:linear-gradient(135deg,#0f4c75,#0a2a43);
-    color:white;
-    padding:20px;
-    border-radius:12px;
-    margin-bottom:20px;
-}
-
+.card{background:linear-gradient(135deg,#0f4c75,#0a2a43);color:white;padding:20px;border-radius:12px;margin-bottom:20px;}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-
-.box{
-    background:white;
-    padding:18px;
-    border-radius:10px;
-    text-align:center;
-    cursor:pointer;
-}
-
-.section{
-    display:none;
-    margin-top:20px;
-    background:white;
-    padding:15px;
-    border-radius:10px;
-}
-
-input,button,select{
-    width:100%;
-    padding:12px;
-    margin:6px 0;
-}
-
-button{
-    background:#0f4c75;
-    color:white;
-    border:none;
-    border-radius:5px;
-}
-
-.chart-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:15px;
-    margin-top:30px;
-}
+.box{background:white;padding:18px;border-radius:10px;text-align:center;cursor:pointer;}
+.section{display:none;margin-top:20px;background:white;padding:15px;border-radius:10px;}
+input,button,select{width:100%;padding:12px;margin:6px 0;}
+button{background:#0f4c75;color:white;border:none;border-radius:5px;}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:30px;}
 .chart-box{height:250px;}
 canvas{width:100% !important;height:100% !important;}
-
-#loader{
-    display:none;
-    position:fixed;
-    top:0;left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,0.7);
-    color:white;
-    font-size:22px;
-    align-items:center;
-    justify-content:center;
-    z-index:9999;
-}
-
-#pinModal{
-    display:none;
-    position:fixed;
-    top:0;
-    left:0;
-    width:100vw;
-    height:100vh;
-    background:rgba(0,0,0,0.6);
-    align-items:center;
-    justify-content:center;
-    z-index:10000;
-}
-
-.modal-box{
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    width:300px;
-    text-align:center;
-}
+#loader{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);color:white;font-size:22px;align-items:center;justify-content:center;z-index:9999;}
+#pinModal{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;z-index:10000;}
+.modal-box{background:white;padding:20px;border-radius:10px;width:300px;text-align:center;}
 </style>
 </head>
 
@@ -112,19 +33,18 @@ canvas{width:100% !important;height:100% !important;}
 
 <div id="pinModal">
     <div class="modal-box">
-        <h3>Enter PIN</h3>
-        <input id="pinInput" placeholder="Enter PIN">
+        <h3 id="pinTitle">Enter PIN</h3>
+        <input id="pinInput" placeholder="Enter 6-digit PIN" maxlength="6">
         <button onclick="submitPin()">Continue</button>
     </div>
 </div>
 
 <div class="header">
-    <h2>💰 Platinum Non Resident Account Dashboard</h2>
+    <h2>ðŸ’° Platinum Non Resident Account Dashboard</h2>
     <span onclick="logout()" style="cursor:pointer;">Logout</span>
 </div>
 
 <div class="container">
-
 <div class="card">
     <h3>Available Balance</h3>
     <div id="balance">$0.00</div>
@@ -136,10 +56,8 @@ canvas{width:100% !important;height:100% !important;}
     <div class="box" onclick="showSection('profile')">Profile</div>
 </div>
 
-<!-- TRANSFER -->
 <div id="transfer" class="section">
     <h3>Select Transfer Type</h3>
-
     <div class="grid">
         <div class="box" onclick="selectTransfer('LOCAL')">Local Transfer</div>
         <div class="box" onclick="selectTransfer('INTERNATIONAL')">International Transfer</div>
@@ -154,7 +72,6 @@ canvas{width:100% !important;height:100% !important;}
         <input id="iban" placeholder="IBAN Number (Optional)">
     </div>
 
-    <!-- ✅ ONLY CHANGE: crypto dropdown added -->
     <div id="cryptoFields" style="display:none;">
         <select id="cryptoType">
             <option value="">Select Crypto</option>
@@ -169,44 +86,34 @@ canvas{width:100% !important;height:100% !important;}
     <button onclick="startTransfer()">Send Money</button>
 </div>
 
-<!-- HISTORY -->
 <div id="history" class="section">
     <h3>Transaction History</h3>
     <div id="historyList">Loading...</div>
 </div>
 
-<!-- PROFILE -->
 <div id="profile" class="section">
     <h3>Profile</h3>
-
     <input id="full_name" placeholder="Full Name">
     <input id="email" placeholder="Email">
     <button onclick="updateProfile()">Update Profile</button>
-
     <hr>
-
     <h4>Change Password</h4>
     <input id="old_password" type="password" placeholder="Old Password">
     <input id="new_password" type="password" placeholder="New Password">
     <button onclick="changePassword()">Change Password</button>
 </div>
 
-<!-- CHART -->
 <div class="chart-grid">
     <div class="chart-box"><canvas id="lineChart"></canvas></div>
     <div class="chart-box"><canvas id="barChart"></canvas></div>
 </div>
-
 </div>
 
 <script>
-const API="http://127.0.0.1:8000/api";
+const API="https://bankingsystem-production-2221.up.railway.app/api";
 const token=localStorage.getItem("token");
 
-let selectedTransferType="";
-let currentTransferId=null;
-let tempPayload=null;
-let isProcessing=false;
+let selectedTransferType="", tempPayload=null, hasPin=false, isProcessing=false;
 
 window.onload=()=>{
     loadUser();
@@ -214,186 +121,144 @@ window.onload=()=>{
 };
 
 async function loadUser(){
-    if(isProcessing) return;
-
-    let res=await fetch(`${API}/accounts/profile/`,{
-        headers:{Authorization:`Bearer ${token}`}
-    });
-    let data=await res.json();
-    balance.innerText="$"+Number(data.balance||0).toLocaleString();
-}
-
-async function loadHistory(){
-    let res=await fetch(`${API}/accounts/transactions/`,{
-        headers:{Authorization:`Bearer ${token}`}
-    });
-
-    let data=await res.json();
-    let box=document.getElementById("historyList");
-    box.innerHTML="";
-
-    if(data.length===0){
-        box.innerHTML="No transactions yet";
-        return;
+    try {
+        let res = await fetch(`${API}/accounts/profile/`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        let data = await res.json();
+        document.getElementById("balance").innerText = "$" + Number(data.balance || 0).toLocaleString();
+        hasPin = data.transaction_pin ? true : false;
+    } catch(e){
+        console.error("Error loading profile:", e);
     }
-
-    data.forEach(tx=>{
-        box.innerHTML += `
-        <div style="padding:10px;border-bottom:1px solid #ccc;">
-            <strong>$${Number(tx.amount).toLocaleString()}</strong><br>
-            ${tx.transfer_type} - ${tx.status}<br>
-            <small>${new Date(tx.created_at).toLocaleString()}</small>
-        </div>`;
-    });
 }
 
 function selectTransfer(type){
     selectedTransferType=type;
-    bankFields.style.display=(type!=="CRYPTO")?"block":"none";
-    cryptoFields.style.display=(type==="CRYPTO")?"block":"none";
+    document.getElementById("bankFields").style.display=(type!=="CRYPTO")?"block":"none";
+    document.getElementById("cryptoFields").style.display=(type==="CRYPTO")?"block":"none";
 }
 
-function startTransfer(){
+async function startTransfer(){
+    if(isProcessing) return;
     if(!selectedTransferType) return alert("Select transfer type");
     if(!amount.value || amount.value<=0) return alert("Enter valid amount");
 
-    tempPayload={
-        transfer_type:selectedTransferType,
-        amount:Number(amount.value)
-    };
+    tempPayload={transfer_type:selectedTransferType, amount:Number(amount.value)};
 
     if(selectedTransferType!=="CRYPTO"){
         tempPayload.bank_name=bankName.value;
         tempPayload.account_number=accountNumberInput.value;
-    }else{
+        tempPayload.swift=swift.value || null;
+        tempPayload.iban=iban.value || null;
+    } else {
         if(!cryptoType.value) return alert("Select crypto type");
-
-        // ✅ DO NOT send crypto_type (keeps backend working)
         tempPayload.crypto_address=wallet.value;
     }
 
-    pinModal.style.display="flex";
+    // Show PIN modal ONLY here
+    document.getElementById("pinModal").style.display="flex";
+    document.getElementById("pinInput").value="";
+    document.getElementById("pinTitle").innerText = "Enter 6-digit PIN";
 }
 
 async function submitPin(){
-    let pin=pinInput.value;
-    if(!pin) return alert("Enter PIN");
-
-    tempPayload.pin=pin;
-    pinModal.style.display="none";
+    if(isProcessing) return;
+    let pin = document.getElementById("pinInput").value.trim();
+    if(!/^\d{6}$/.test(pin)) return alert("PIN must be exactly 6 digits");
+    document.getElementById("pinModal").style.display="none";
 
     isProcessing=true;
+    tempPayload.pin = pin;
 
-    let res=await fetch(`${API}/transactions/create/`,{
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json",
-            Authorization:`Bearer ${token}`
-        },
-        body:JSON.stringify(tempPayload)
-    });
+    try {
+        // Show loader for 3 seconds
+        document.getElementById("loader").style.display = "flex";
+        await new Promise(res => setTimeout(res, 3000));
 
-    let data=await res.json();
+        // Send transfer request
+        let res = await fetch(`${API}/transactions/create/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify(tempPayload)
+        });
+        let data = await res.json();
+        document.getElementById("loader").style.display = "none";
 
-    if(res.ok){
-        currentTransferId=data.transfer_id;
-        let otp=prompt("Enter OTP sent to your email:");
-        if(!otp) return alert("OTP required");
-        verifyOTP(otp);
-    }else{
-        isProcessing=false;
-        alert("Transfer failed");
-    }
-}
+        if(!res.ok) {
+            isProcessing=false;
+            return alert(data.error || "Transfer failed");
+        }
 
-function verifyOTP(otp){
-    loader.style.display="flex";
-
-    fetch(`${API}/transactions/verify/`,{
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json",
-            Authorization:`Bearer ${token}`
-        },
-        body:JSON.stringify({
-            transfer_id:currentTransferId,
-            otp:otp
-        })
-    });
-
-    setTimeout(()=>{
-        loader.style.display="none";
-        isProcessing=false;
-        alert("Transaction Successful ✅");
+        alert("Transaction Successful âœ…");
         loadUser();
-    },3000);
-}
+        isProcessing=false;
 
-async function updateProfile(){
-    let res=await fetch(`${API}/accounts/profile/`,{
-        method:"PATCH",
-        headers:{
-            "Content-Type":"application/json",
-            Authorization:`Bearer ${token}`
-        },
-        body:JSON.stringify({
-            full_name: full_name.value,
-            email: email.value
-        })
-    });
-
-    if(res.ok){
-        alert("Profile updated ✅");
-        loadUser();
-    }else{
-        alert("Update failed");
-    }
-}
-
-async function changePassword(){
-    let oldPass=old_password.value;
-    let newPass=new_password.value;
-
-    if(!oldPass || !newPass){
-        return alert("Fill all password fields");
-    }
-
-    let res=await fetch(`${API}/accounts/change-password/`,{
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json",
-            Authorization:`Bearer ${token}`
-        },
-        body:JSON.stringify({
-            old_password:oldPass,
-            new_password:newPass
-        })
-    });
-
-    let data=await res.json();
-
-    if(res.ok){
-        alert("Password changed successfully ✅");
-    }else{
-        alert(data.error || "Failed");
+    } catch(e){
+        console.error("Error creating transfer:", e);
+        document.getElementById("loader").style.display = "none";
+        alert("Network/server error during transfer");
+        isProcessing=false;
     }
 }
 
 function showSection(id){
     document.querySelectorAll(".section").forEach(s=>s.style.display="none");
     document.getElementById(id).style.display="block";
-
     if(id==="history") loadHistory();
 }
 
-function logout(){
-    localStorage.clear();
-    window.location.href="login.html";
+async function loadHistory(){
+    try {
+        let res=await fetch(`${API}/accounts/transactions/`,{
+            headers:{Authorization:`Bearer ${token}`}
+        });
+        let data=await res.json();
+        let box=document.getElementById("historyList");
+        box.innerHTML="";
+        if(data.length===0){box.innerHTML="No transactions yet"; return;}
+        data.forEach(tx=>{
+            box.innerHTML += `<div style="padding:10px;border-bottom:1px solid #ccc;">
+                <strong>$${Number(tx.amount).toLocaleString()}</strong><br>
+                ${tx.transfer_type} - ${tx.status}<br>
+                <small>${new Date(tx.created_at).toLocaleString()}</small>
+            </div>`;
+        });
+    } catch(e){console.error("Error loading history:", e);}
+}
+
+function logout(){ localStorage.clear(); window.location.href="login.html"; }
+
+async function updateProfile(){
+    try {
+        let res=await fetch(`${API}/accounts/profile/`,{
+            method:"PATCH",
+            headers:{"Content-Type":"application/json", Authorization:`Bearer ${token}`},
+            body:JSON.stringify({full_name:full_name.value, email:email.value})
+        });
+        if(res.ok){alert("Profile updated âœ…"); loadUser();}
+        else alert("Update failed");
+    } catch(e){console.error("Profile update error:", e);}
+}
+
+async function changePassword(){
+    let oldPass=old_password.value, newPass=new_password.value;
+    if(!oldPass || !newPass) return alert("Fill all password fields");
+    try {
+        let res=await fetch(`${API}/accounts/change-password/`,{
+            method:"POST",
+            headers:{"Content-Type":"application/json", Authorization:`Bearer ${token}`},
+            body:JSON.stringify({old_password:oldPass,new_password:newPass})
+        });
+        let data=await res.json();
+        if(res.ok) alert("Password changed successfully âœ…");
+        else alert(data.error || "Failed");
+    } catch(e){console.error("Change password error:", e);}
 }
 
 function loadCharts(){
-    new Chart(lineChart,{type:"line",data:{labels:["Jan","Feb"],datasets:[{data:[10,20]}]},options:{responsive:true}});
-    new Chart(barChart,{type:"bar",data:{labels:["In","Out"],datasets:[{data:[50,30]}]},options:{responsive:true}});
+    new Chart(lineChart,{type:"line",data:{labels:["Jan","Feb"],datasets:[{data:[10,20]}]}});
+    new Chart(barChart,{type:"bar",data:{labels:["In","Out"],datasets:[{data:[50,30]}]}});
 }
 </script>
 
