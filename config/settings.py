@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -------------------------
 SECRET_KEY = os.environ.get("SECRET_KEY")
 DEBUG = os.environ.get("DEBUG", "False") == "True"
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 
 # -------------------------
 # Custom user model
@@ -92,9 +92,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database (PostgreSQL only)
 # -------------------------
 DATABASES = {
-    "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL")
-    )
+    "default": dj_database_url.parse(os.environ["DATABASE_URL"], conn_max_age=600)
 }
 
 # -------------------------
