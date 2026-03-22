@@ -19,8 +19,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security
 # -------------------------
 SECRET_KEY = os.environ.get("SECRET_KEY")
+
 DEBUG = os.environ.get("DEBUG", "False") == "True"
+
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+
+# For CSRF behind proxy (like Railway)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 # -------------------------
 # Custom user model
@@ -57,7 +65,7 @@ REST_FRAMEWORK = {
 # Middleware
 # -------------------------
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware", 
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -131,6 +139,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 # -------------------------
 # Email (send OTP through domain email)
 # -------------------------
@@ -146,4 +156,3 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Default primary key
 # -------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
