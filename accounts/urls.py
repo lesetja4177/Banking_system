@@ -1,11 +1,16 @@
 from django.urls import path
-from .views import RegisterView,TransactionListView
-from .views import RegisterView, CustomLoginView
-from .views import ProfileView
-from .views import CreatePinView, VerifyPinView
+from django.views.decorators.csrf import csrf_exempt
+from .views import (
+    RegisterView,
+    CustomLoginView,
+    ProfileView,
+    CreatePinView,
+    VerifyPinView,
+    TransactionListView
+)
 
 urlpatterns = [
-    path('register/', RegisterView.as_view()),
+    path('register/', csrf_exempt(RegisterView.as_view())),  # CSRF exempt
     path('login/', CustomLoginView.as_view()),
     path('profile/', ProfileView.as_view()),
     path('create-pin/', CreatePinView.as_view()),

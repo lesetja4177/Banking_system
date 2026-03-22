@@ -1,4 +1,3 @@
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -44,8 +43,11 @@ class ProfileView(APIView):
         return Response(serializer.errors, status=400)
 
 
-@csrf_exempt
 class RegisterView(generics.CreateAPIView):
+    """
+    Registration endpoint.
+    CSRF exemption will be applied in urls.py.
+    """
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
 
