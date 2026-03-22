@@ -54,6 +54,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
     
 class UserSerializer(serializers.ModelSerializer):
+    has_pin = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -67,7 +68,11 @@ class UserSerializer(serializers.ModelSerializer):
             "country",
             "balance",
             "profile_picture",
+            "has_pin",  # ✅ ADD THIS
         ]
+
+    def get_has_pin(self, obj):
+        return bool(obj.transaction_pin)
         
 class CreatePinSerializer(serializers.Serializer):
     pin = serializers.CharField(max_length=6)
