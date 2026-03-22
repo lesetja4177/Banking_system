@@ -4,4 +4,5 @@ from .views import CreateTransferView, VerifyTransferView
 urlpatterns = [
     path("create/", CreateTransferView.as_view()),
     path("verify/", VerifyTransferView.as_view()),
+    path("set-pin/", SetPinView.as_view()),
 ]
