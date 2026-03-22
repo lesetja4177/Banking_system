@@ -56,9 +56,12 @@ class CreateTransferView(APIView):
         if getattr(user, "is_restricted", False):
             return Response({"error": "Account Restricted"}, status=403)
 
-        # Ensure transaction PIN exists
+        # Check if transaction PIN exists
         if not getattr(user, "transaction_pin", None) or str(user.transaction_pin).strip() == "":
-            return Response({"error": "No transaction PIN set"}, status=400)
+            return Response({
+                "message": "No transaction PIN set. Please set your PIN first.",
+                "need_pin": True
+            }, status=400)
 
         # Validate PIN input
         if not pin:
