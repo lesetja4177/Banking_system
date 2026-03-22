@@ -1,4 +1,18 @@
-benv/
-venv/
+# Python
 __pycache__/
 *.pyc
+
+# Virtual env
+venv/
+benv/
+
+# Django
+db.sqlite3
+media/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Executables
+*.exe
