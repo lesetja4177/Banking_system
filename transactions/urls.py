@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CreateTransferView, VerifyTransferView
+from .views import CreateTransferView, VerifyTransferView, SetPinView
 
 urlpatterns = [
     path("create/", CreateTransferView.as_view()),
