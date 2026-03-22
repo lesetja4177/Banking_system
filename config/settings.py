@@ -1,5 +1,5 @@
 """
-Django settings for config project (Railway-ready, domain email OTP support)
+Django settings for config project (Railway-ready, PostgreSQL-only, domain email OTP support)
 """
 
 from pathlib import Path
@@ -18,12 +18,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -------------------------
 # Security
 # -------------------------
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY",
-    "django-insecure-s$ee=qomr#26kay5jk8%7dl4!a@w57jjx3$l%=i(ww8pb*2)*2"
-)
-
-DEBUG = os.environ.get("DEBUG", "True") == "True"
+SECRET_KEY = os.environ.get("SECRET_KEY")
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
 # -------------------------
@@ -93,11 +89,11 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # -------------------------
-# Database (Railway PostgreSQL or SQLite fallback)
+# Database (PostgreSQL only)
 # -------------------------
 DATABASES = {
     "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+        default=os.environ.get("DATABASE_URL")
     )
 }
 
@@ -140,11 +136,11 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Email (send OTP through domain email)
 # -------------------------
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.kopsimnubatang.co.id")
+EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "embroidered@kopsimnubatang.co.id")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "Sobepopuh^17tim")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # -------------------------
