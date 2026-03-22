@@ -3,34 +3,11 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.core.mail import send_mail, EmailMessage
-from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.hashers import check_password
 
 from .models import Transfer
 from .serializers import TransferSerializer
 from .utils import generate_receipt
-
-
-# ============================================================
-# ✅ SET / CREATE TRANSACTION PIN
-# ============================================================
-class SetPinView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        user = request.user
-        pin = request.data.get("pin")
-
-        if not pin:
-            return Response({"error": "PIN is required"}, status=400)
-
-        if len(str(pin)) < 4:
-            return Response({"error": "PIN must be at least 4 digits"}, status=400)
-
-        # Save hashed PIN
-        user.transaction_pin = make_password(pin)
-        user.save()
-
-        return Response({"message": "PIN created successfully"})
 
 
 # ============================================================
@@ -41,10 +18,16 @@ class CreateTransferView(APIView):
 
     def post(self, request):
         user = request.user
+
+        # ===============================
+        # GET DATA
+        # ===============================
         amount = request.data.get("amount")
         pin = request.data.get("pin")
 
-        # Validate amount
+        # ===============================
+        # VALIDATE AMOUNT
+        # ===============================
         if not amount:
             return Response({"error": "Amount is required"}, status=400)
         try:
@@ -52,37 +35,51 @@ class CreateTransferView(APIView):
         except ValueError:
             return Response({"error": "Invalid amount"}, status=400)
 
-        # Check if user is restricted
+        # ===============================
+        # CHECK RESTRICTION
+        # ===============================
         if getattr(user, "is_restricted", False):
             return Response({"error": "Account Restricted"}, status=403)
 
-        # Check if transaction PIN exists
+        # ===============================
+        # CHECK PIN EXISTS FIRST
+        # ===============================
         if not getattr(user, "transaction_pin", None) or str(user.transaction_pin).strip() == "":
-            return Response({
-                "message": "No transaction PIN set. Please set your PIN first.",
-                "need_pin": True
-            }, status=400)
+            return Response({"error": "No transaction PIN set"}, status=400)
 
-        # Validate PIN input
+        # ===============================
+        # VALIDATE PIN INPUT
+        # ===============================
         if not pin:
             return Response({"error": "Transaction PIN is required"}, status=400)
 
+        # ===============================
+        # VALIDATE PIN MATCH
+        # ===============================
         if not check_password(pin, user.transaction_pin):
             return Response({"error": "Invalid transaction PIN"}, status=400)
 
-        # Check balance
+        # ===============================
+        # CHECK BALANCE
+        # ===============================
         if user.balance < amount:
             return Response({"error": "Insufficient balance"}, status=400)
 
-        # Generate OTP
+        # ===============================
+        # GENERATE OTP
+        # ===============================
         otp = str(random.randint(100000, 999999))
 
-        # Save transfer
+        # ===============================
+        # SAVE TRANSFER
+        # ===============================
         serializer = TransferSerializer(data=request.data)
         if serializer.is_valid():
             transfer = serializer.save(user=user, otp=otp)
 
-            # Send OTP email
+            # ===============================
+            # SEND OTP
+            # ===============================
             send_mail(
                 "Transaction OTP",
                 f"Your OTP is {otp}",
@@ -107,9 +104,13 @@ class VerifyTransferView(APIView):
 
     def post(self, request):
         user = request.user
+
         transfer_id = request.data.get("transfer_id")
         input_otp = request.data.get("otp")
 
+        # ===============================
+        # VALIDATE INPUT
+        # ===============================
         if not transfer_id or not input_otp:
             return Response({"error": "transfer_id and otp are required"}, status=400)
 
@@ -118,25 +119,40 @@ class VerifyTransferView(APIView):
         except Transfer.DoesNotExist:
             return Response({"error": "Transfer not found"}, status=404)
 
+        # ===============================
+        # CHECK RESTRICTION
+        # ===============================
         if getattr(user, "is_restricted", False):
             return Response({"error": "Account Restricted"}, status=403)
 
+        # ===============================
+        # VERIFY OTP
+        # ===============================
         if transfer.otp != input_otp:
             return Response({"error": "Invalid OTP"}, status=400)
 
+        # ===============================
+        # CHECK BALANCE AGAIN
+        # ===============================
         if user.balance < transfer.amount:
             return Response({"error": "Insufficient balance"}, status=400)
 
-        # Deduct balance
+        # ===============================
+        # DEDUCT BALANCE
+        # ===============================
         user.balance -= transfer.amount
         user.save()
 
-        # Update transfer
+        # ===============================
+        # UPDATE TRANSFER
+        # ===============================
         transfer.status = "Completed"
         transfer.otp = None
         transfer.save()
 
-        # Generate PDF receipt
+        # ===============================
+        # GENERATE PDF RECEIPT
+        # ===============================
         try:
             file_path = generate_receipt(user, transfer)
 
@@ -151,6 +167,9 @@ class VerifyTransferView(APIView):
         except Exception as e:
             print("Email/PDF Error:", str(e))
 
+        # ===============================
+        # SUCCESS RESPONSE
+        # ===============================
         return Response({
             "message": "Transaction successful. Receipt sent to email"
         })
