@@ -1,8 +1,10 @@
 from django.urls import path
-from .views import CreateTransferView, VerifyTransferView, SetPinView
+from .views import CreateTransferView, SetPinView
 
 urlpatterns = [
-    path("create/", CreateTransferView.as_view()),
-    path("verify/", VerifyTransferView.as_view()),
-    path("set-pin/", SetPinView.as_view()),
+    # Endpoint to create/send a transfer
+    path("create/", CreateTransferView.as_view(), name="create-transfer"),
+
+    # Endpoint to create a 6-digit PIN
+    path("set-pin/", SetPinView.as_view(), name="set-pin"),
 ]

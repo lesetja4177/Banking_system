@@ -1,4 +1,3 @@
-# transactions/views.py
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -29,7 +28,7 @@ class SetPinView(APIView):
         return Response({"message": "PIN created successfully"})
 
 
-# ---------------------- CREATE TRANSFER (NO OTP) ----------------------
+# ---------------------- CREATE TRANSFER (PIN CHECK + PROCESSING) ----------------------
 class CreateTransferView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -46,11 +45,13 @@ class CreateTransferView(APIView):
         except ValueError:
             return Response({"error": "Invalid amount"}, status=400)
 
+        # Check if user has PIN
+        if not getattr(user, "transaction_pin", None):
+            return Response({"error": "No transaction PIN set. Please create one first."}, status=400)
+
         # Validate PIN
         if not pin:
             return Response({"error": "Transaction PIN is required"}, status=400)
-        if not getattr(user, "transaction_pin", None):
-            return Response({"error": "No transaction PIN set"}, status=400)
         if not check_password(pin, user.transaction_pin):
             return Response({"error": "Invalid transaction PIN"}, status=400)
 
@@ -60,10 +61,10 @@ class CreateTransferView(APIView):
         if user.balance < amount:
             return Response({"error": "Insufficient balance"}, status=400)
 
-        # Save transfer
+        # Save transfer as Pending
         serializer = TransferSerializer(data=request.data)
         if serializer.is_valid():
-            transfer = serializer.save(user=user)
+            transfer = serializer.save(user=user, status="Pending")
 
             # Simulate 3-second processing delay
             time.sleep(3)
