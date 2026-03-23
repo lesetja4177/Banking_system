@@ -5,9 +5,12 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
 from io import BytesIO
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Put your Dropbox access token here
-DROPBOX_ACCESS_TOKEN = os.getenv("DROPBOX_ACCESS_TOKEN", "<YOUR_PERMANENT_TOKEN>")
+DROPBOX_ACCESS_TOKEN = os.environ.get("DROPBOX_ACCESS_TOKEN")
+dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
 
 def generate_receipt(user, transfer):
     # 1. Create PDF in memory (no local file needed)
