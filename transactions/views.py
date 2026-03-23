@@ -11,24 +11,6 @@ from .serializers import TransferSerializer
 from .utils import generate_receipt  # updated to handle Dropbox upload
 
 
-# ---------------------- SET / CREATE 6-DIGIT PIN ----------------------
-class SetPinView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        user = request.user
-        pin = request.data.get("pin")
-
-        if not pin:
-            return Response({"error": "PIN is required"}, status=400)
-        if len(str(pin)) != 6 or not str(pin).isdigit():
-            return Response({"error": "PIN must be exactly 6 digits"}, status=400)
-
-        user.transaction_pin = make_password(pin)
-        user.save()
-
-        return Response({"message": "PIN created successfully"})
-
 
 # ---------------------- CREATE TRANSFER (PIN CHECK + PROCESSING) ----------------------
 class CreateTransferView(APIView):
