@@ -3,46 +3,13 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.hashers import check_password
-import time
-import os
 from django.conf import settings
+from django.utils import timezone
 from fpdf import FPDF
+import os
 
 from .models import Transfer
 from .serializers import TransferSerializer
-
-# ---------------------- UTILITY: GENERATE RECEIPT ----------------------
-def generate_receipt(user, transfer):
-    """
-    Generate PDF receipt locally on Railway and return URL
-    """
-    receipt_folder = os.path.join(settings.MEDIA_ROOT, "receipts")
-    os.makedirs(receipt_folder, exist_ok=True)
-
-    filename = f"receipt_{transfer.id}.pdf"
-    file_path = os.path.join(receipt_folder, filename)
-
-    # Create PDF
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(200, 10, txt="Transaction Receipt", ln=True, align="C")
-    pdf.ln(10)
-
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt=f"User: {user.username}", ln=True)
-    pdf.cell(200, 10, txt=f"Amount: ${transfer.amount}", ln=True)
-    pdf.cell(200, 10, txt=f"Status: {transfer.status}", ln=True)
-    pdf.cell(200, 10, txt=f"Transfer Type: {transfer.transfer_type}", ln=True)
-    pdf.cell(200, 10, txt=f"Transfer ID: {transfer.id}", ln=True)
-    pdf.cell(200, 10, txt=f"Date: {transfer.created_at.strftime('%Y-%m-%d %H:%M:%S')}", ln=True)
-
-    pdf.output(file_path)
-
-    # Return direct URL
-    receipt_url = f"{settings.BASE_URL}{settings.MEDIA_URL}receipts/{filename}"
-    return receipt_url
-
 
 # ---------------------- CREATE TRANSFER (PIN CHECK + PROCESSING) ----------------------
 class CreateTransferView(APIView):
@@ -82,9 +49,6 @@ class CreateTransferView(APIView):
         if serializer.is_valid():
             transfer = serializer.save(user=user, status="Pending")
 
-            # Simulate processing delay
-            time.sleep(3)
-
             # Deduct balance
             user.balance -= transfer.amount
             user.save()
@@ -93,12 +57,12 @@ class CreateTransferView(APIView):
             transfer.status = "Completed"
             transfer.save()
 
-            # Generate receipt
+            # Generate PDF receipt
             receipt_url = None
             try:
-                receipt_url = generate_receipt(user, transfer)
+                receipt_url = self.generate_receipt(user, transfer)
             except Exception as e:
-                print("Receipt generation error:", str(e))
+                print("Receipt generation error:", e)
 
             return Response({
                 "success": True,
@@ -109,3 +73,31 @@ class CreateTransferView(APIView):
             })
 
         return Response(serializer.errors, status=400)
+
+    # ---------------------- RECEIPT GENERATION ----------------------
+    def generate_receipt(self, user, transfer):
+        # Ensure receipts folder exists
+        receipt_dir = os.path.join(settings.MEDIA_ROOT, "receipts")
+        os.makedirs(receipt_dir, exist_ok=True)
+
+        filename = f"receipt_{transfer.id}.pdf"
+        filepath = os.path.join(receipt_dir, filename)
+
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Helvetica", "B", 16)
+        pdf.cell(0, 10, "Bank Transfer Receipt", ln=True, align="C")
+        pdf.ln(10)
+        pdf.set_font("Helvetica", "", 12)
+        pdf.cell(0, 10, f"Transaction ID: {transfer.id}", ln=True)
+        pdf.cell(0, 10, f"Date: {timezone.localtime(transfer.created_at).strftime('%Y-%m-%d %H:%M:%S')}", ln=True)
+        pdf.cell(0, 10, f"User: {user.username}", ln=True)
+        pdf.cell(0, 10, f"Amount: ${transfer.amount:,.2f}", ln=True)
+        pdf.cell(0, 10, f"Type: {transfer.transfer_type}", ln=True)
+        pdf.cell(0, 10, f"Status: {transfer.status}", ln=True)
+
+        pdf.output(filepath)
+
+        # Return full URL
+        base_url = getattr(settings, "BASE_URL", "")
+        return f"{base_url}{settings.MEDIA_URL}receipts/{filename}"
