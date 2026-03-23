@@ -14,6 +14,7 @@ load_dotenv()
 # Paths
 # -------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_URL = os.environ.get("BASE_URL", "https://bankingsystem-production-2221.up.railway.app")
 
 # -------------------------
 # Security
