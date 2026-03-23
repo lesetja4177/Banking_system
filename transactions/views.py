@@ -2,14 +2,12 @@
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.hashers import check_password
 import time
-import dropbox
 
 from .models import Transfer
 from .serializers import TransferSerializer
-from .utils import generate_receipt  # updated to handle Dropbox upload
-
+from .utils import generate_receipt  # handles Dropbox upload
 
 
 # ---------------------- CREATE TRANSFER (PIN CHECK + PROCESSING) ----------------------
@@ -18,10 +16,11 @@ class CreateTransferView(APIView):
 
     def post(self, request):
         user = request.user
-        amount = request.data.get("amount")
-        pin = request.data.get("pin")
+        data = request.data.copy()  # ✅ copy to safely modify
+        pin = data.pop("pin", None)  # 🔥 remove PIN before serializer
 
-        # Validate amount
+        # -------------------- 1️⃣ Validate Amount --------------------
+        amount = data.get("amount")
         if not amount:
             return Response({"error": "Amount is required"}, status=400)
         try:
@@ -29,45 +28,45 @@ class CreateTransferView(APIView):
         except ValueError:
             return Response({"error": "Invalid amount"}, status=400)
 
-        # Check if user has PIN
+        # -------------------- 2️⃣ Validate PIN --------------------
         if not getattr(user, "transaction_pin", None):
             return Response({"error": "No transaction PIN set. Please create one first."}, status=400)
 
-        # Validate PIN
         if not pin:
             return Response({"error": "Transaction PIN is required"}, status=400)
         if not check_password(pin, user.transaction_pin):
             return Response({"error": "Invalid transaction PIN"}, status=400)
 
-        # Check restrictions and balance
+        # -------------------- 3️⃣ Check Restrictions & Balance --------------------
         if getattr(user, "is_restricted", False):
             return Response({"error": "Account Restricted"}, status=403)
         if user.balance < amount:
             return Response({"error": "Insufficient balance"}, status=400)
 
-        # Save transfer as Pending
-        serializer = TransferSerializer(data=request.data)
+        # -------------------- 4️⃣ Validate & Save Transfer --------------------
+        serializer = TransferSerializer(data=data)
         if serializer.is_valid():
             transfer = serializer.save(user=user, status="Pending")
 
-            # Simulate 3-second processing delay
+            # -------------------- 5️⃣ Simulate Processing Delay --------------------
             time.sleep(3)
 
-            # Deduct balance
+            # -------------------- 6️⃣ Deduct Balance --------------------
             user.balance -= transfer.amount
             user.save()
 
-            # Mark transfer completed
+            # -------------------- 7️⃣ Mark Transfer Completed --------------------
             transfer.status = "Completed"
             transfer.save()
 
-            # Generate PDF receipt and upload to Dropbox
+            # -------------------- 8️⃣ Generate Receipt --------------------
             receipt_url = None
             try:
-                receipt_url = generate_receipt(user, transfer)  # returns Dropbox direct link
+                receipt_url = generate_receipt(user, transfer)
             except Exception as e:
                 print("Receipt generation/upload error:", str(e))
 
+            # -------------------- 9️⃣ Response --------------------
             return Response({
                 "success": True,
                 "message": "Transaction Successful",
@@ -76,4 +75,5 @@ class CreateTransferView(APIView):
                 "receipt_url": receipt_url
             })
 
+        # -------------------- 10️⃣ Serializer Errors --------------------
         return Response(serializer.errors, status=400)
