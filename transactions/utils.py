@@ -4,6 +4,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
 from io import BytesIO
+import os
 
 # Put your Dropbox access token here
 DROPBOX_ACCESS_TOKEN = os.getenv("DROPBOX_ACCESS_TOKEN", "<YOUR_PERMANENT_TOKEN>")
