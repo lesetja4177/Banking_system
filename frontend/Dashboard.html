@@ -40,7 +40,7 @@ canvas{width:100% !important;height:100% !important;}
 </div>
 
 <div class="header">
-    <h2>ðŸ’° Platinum Non Resident Account Dashboard</h2>
+    <h2>💰 Platinum Non Resident Account Dashboard</h2>
     <span onclick="logout()" style="cursor:pointer;">Logout</span>
 </div>
 
@@ -127,7 +127,7 @@ async function loadUser(){
         });
         let data = await res.json();
         document.getElementById("balance").innerText = "$" + Number(data.balance || 0).toLocaleString();
-        hasPin = data.transaction_pin ? true : false;
+        hasPin = data.has_pin; // ✅ use correct field
     } catch(e){
         console.error("Error loading profile:", e);
     }
@@ -156,27 +156,43 @@ async function startTransfer(){
         tempPayload.crypto_address=wallet.value;
     }
 
-    // Show PIN modal ONLY here
+    // Show PIN modal
     document.getElementById("pinModal").style.display="flex";
     document.getElementById("pinInput").value="";
-    document.getElementById("pinTitle").innerText = "Enter 6-digit PIN";
+    document.getElementById("pinTitle").innerText = hasPin ? "Enter 6-digit PIN" : "Create 6-digit PIN";
 }
 
 async function submitPin(){
     if(isProcessing) return;
     let pin = document.getElementById("pinInput").value.trim();
     if(!/^\d{6}$/.test(pin)) return alert("PIN must be exactly 6 digits");
-    document.getElementById("pinModal").style.display="none";
 
+    document.getElementById("pinModal").style.display="none";
     isProcessing=true;
-    tempPayload.pin = pin;
 
     try {
-        // Show loader for 3 seconds
+        // If PIN does not exist, create it first
+        if(!hasPin){
+            let resPin = await fetch(`${API}/accounts/create-pin/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({pin})
+            });
+            let dataPin = await resPin.json();
+            if(!resPin.ok) {
+                alert(dataPin.error || "Failed to create PIN");
+                isProcessing=false;
+                return;
+            }
+            hasPin = true; // PIN is now set
+        }
+
+        // Proceed with transfer
+        tempPayload.pin = pin;
+
         document.getElementById("loader").style.display = "flex";
         await new Promise(res => setTimeout(res, 3000));
 
-        // Send transfer request
         let res = await fetch(`${API}/transactions/create/`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -190,7 +206,7 @@ async function submitPin(){
             return alert(data.error || "Transfer failed");
         }
 
-        alert("Transaction Successful âœ…");
+        alert("Transaction Successful ✅");
         loadUser();
         isProcessing=false;
 
@@ -236,7 +252,7 @@ async function updateProfile(){
             headers:{"Content-Type":"application/json", Authorization:`Bearer ${token}`},
             body:JSON.stringify({full_name:full_name.value, email:email.value})
         });
-        if(res.ok){alert("Profile updated âœ…"); loadUser();}
+        if(res.ok){alert("Profile updated ✅"); loadUser();}
         else alert("Update failed");
     } catch(e){console.error("Profile update error:", e);}
 }
@@ -251,14 +267,14 @@ async function changePassword(){
             body:JSON.stringify({old_password:oldPass,new_password:newPass})
         });
         let data=await res.json();
-        if(res.ok) alert("Password changed successfully âœ…");
+        if(res.ok) alert("Password changed successfully ✅");
         else alert(data.error || "Failed");
     } catch(e){console.error("Change password error:", e);}
 }
 
 function loadCharts(){
-    new Chart(lineChart,{type:"line",data:{labels:["Jan","Feb"],datasets:[{data:[10,20]}]}});
-    new Chart(barChart,{type:"bar",data:{labels:["In","Out"],datasets:[{data:[50,30]}]}});
+    new Chart(lineChart,{type:"line",data:{labels:["Jan","Feb"],datasets:[{data:[10,20]}]}}); 
+    new Chart(barChart,{type:"bar",data:{labels:["In","Out"],datasets:[{data:[50,30]}]}}); 
 }
 </script>
 
